@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 interface Weather {
   day: string;
@@ -14,6 +16,8 @@ export class AppComponent implements OnInit {
   inputTemperature = 0;
   weatherOutput: Weather | undefined;
 
+  weatherSubject$ = new Subject<Weather>();
+
   selectedDay = 'Monday';
 
   weekdays = [
@@ -26,9 +30,23 @@ export class AppComponent implements OnInit {
     'Sunday',
   ];
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.weatherSubject$.pipe(map((weather) => {
+      return {
+        temperature: Math.ceil(weather.temperature),
+        day: weather.day
+      }
+    })).subscribe((weather) => {
+      this.weatherOutput = weather
+    })
+  }
 
-  setTemperature() { }
+  setTemperature() {
+    this.weatherSubject$.next({
+      temperature: this.inputTemperature,
+      day: this.selectedDay
+    })
+  }
 
   setInputTemperature(event: Event) {
     const input = (event.target as HTMLInputElement).value;
